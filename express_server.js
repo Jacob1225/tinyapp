@@ -30,6 +30,10 @@ const addNewUrl = longUrl => {
     return shortUrl;
 };
 
+const updateUrl = function (shortUrl, longUrl) {
+    urlDatabase[shortUrl] = longUrl;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -63,6 +67,18 @@ app.get("/urls.json", (req, res) => {
     const shortUrl = addNewUrl(longUrl);
   
     res.redirect(`urls/${shortUrl}`);
+  });
+
+  app.post('/urls/:shortURL', (req, res) => {
+  
+    const shortUrl = req.params.shortURL;
+  
+    const longUrl = req.body['longURL'];  
+  
+    updateUrl(shortUrl, longUrl);
+  
+    res.redirect(`/urls`);
+  
   });
 
   app.post('/urls/:shortURL/delete', (req, res) => {
