@@ -1,5 +1,7 @@
 const express = require("express");
+const cookieParser = reuquire('cookie-parser');
 const app = express();
+app.use(cookieParser());
 const PORT = 8080; // default port 8080
 
 //const shortUrl = function generateRandomString() {
@@ -19,19 +21,19 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //Helper Functions
 
-const addNewUrl = longUrl => {
+const addNewUrl = longURL => {
     
     const shortUrl = Math.random().toString(36).substring(2, 8);
 
     //add it to the urlDatabase
 
-    urlDatabase[shortUrl] = longUrl;
+    urlDatabase[shortURL] = longURL;
 
-    return shortUrl;
+    return shortURL;
 };
 
-const updateUrl = function (shortUrl, longUrl) {
-    urlDatabase[shortUrl] = longUrl;
+const updateUrl = function (shortURL, longURL) {
+    urlDatabase[shortURL] = longURL;
 };
 
 app.get("/", (req, res) => {
@@ -63,19 +65,19 @@ app.get("/urls.json", (req, res) => {
 
   app.post('/urls', (req, res) => {
   
-    const longUrl = req.body['longURL'];
-    const shortUrl = addNewUrl(longUrl);
+    const longURL = req.body['longURL'];
+    const shortURL = addNewUrl(longURL);
   
     res.redirect(`urls/${shortUrl}`);
   });
 
   app.post('/urls/:shortURL', (req, res) => {
   
-    const shortUrl = req.params.shortURL;
+    const shortURL = req.params.shortURL;
   
-    const longUrl = req.body['longURL'];  
+    const longURL = req.body['longURL'];  
   
-    updateUrl(shortUrl, longUrl);
+    updateUrl(shortURL, longURL);
   
     res.redirect(`/urls`);
   
