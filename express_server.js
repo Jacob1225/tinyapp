@@ -66,6 +66,9 @@ app.get("/urls.json", (req, res) => {
     res.redirect(longURL);
   });
 
+  app.get('/register', (req, res) => {
+    res.render("registration");
+  })
   app.post('/urls', (req, res) => {
   
     const longURL = req.body['longURL'];
