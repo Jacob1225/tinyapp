@@ -157,17 +157,23 @@ app.get('/urls', (req, res) => {
   
     const longURL = req.body['longURL'];  
   
-    updateUrl(shortURL, longURL);
-  
-    res.redirect(`/urls`);
-  
+    if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+      updateUrl(shortURL, longURL);
+      res.redirect(`/urls`);
+    } else {
+      res.send('Request Denied');
+    }
   });
 
   app.post('/urls/:shortURL/delete', (req, res) => {
       const shortUrl =  req.params.shortURL;
-      delete urlDatabase[shortUrl];
+      if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+         delete urlDatabase[shortUrl];
+         res.redirect(`/urls`);
 
-      res.redirect(`/urls`);
+      } else {
+        res.send('Request denied');
+      }
   });
 
   app.post('/register',(req, res) => {
