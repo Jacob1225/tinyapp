@@ -91,7 +91,14 @@ app.get("/urls.json", (req, res) => {
 
   app.get("/urls/new", (req, res) => {
     let templateVars = {user: users[req.cookies.user_id]};
-    res.render("urls_new", templateVars);
+    
+    //verfiy user is logged in to access tiny url
+    if (!templateVars.user) {
+      res.redirect('/login');
+    
+    } else {
+      res.render("urls_new", templateVars);
+    }
   });
 
   app.get("/urls/:shortURL", (req, res) => {
