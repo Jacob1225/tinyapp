@@ -43,15 +43,25 @@ const updateUrl = function (shortURL, longURL) {
 
 const addUser = function (email, password) {
   const id = Math.random().toString(36).substring(2, 8);
-
   const newUser = {
     id: id,
     email: email,
     password: password
   };
 
-  users[newUser] = newUser;
+  users[id] = newUser;
   return id;
+};
+
+const emailLookUp = function (email) {
+  let ids = Object.keys(users);
+
+  for (let id of ids) {
+    if (users[id]['email'] === email) {
+      return true;
+    }
+  }
+  return false;
 };
 
 app.get("/", (req, res) => {
@@ -114,16 +124,25 @@ app.get("/urls.json", (req, res) => {
   });
 
   app.post('/register',(req, res) => {
+    console.log(users);
     const email = req.body.email;
     const password = req.body.password;
-
-    const id = addUser(email, password);
-
-    res.cookie('user_id', id);
-    console.log(users);
     
-
-    res.redirect('/urls');
+    if (!email || !password) {
+      res.status(400);
+      res.send('Fields cannot be blank!');
+    
+    } else if (emailLookUp(email)) {
+      res.status(400);
+      res.send('An Account with this email already exists!');
+    
+    } else {
+      const id = addUser(email, password);
+      
+      res.cookie('user_id', id);
+      res.redirect('/urls');
+      
+    }
   });
 
  
