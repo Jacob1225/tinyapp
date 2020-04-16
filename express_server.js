@@ -1,47 +1,43 @@
-const express = require("express");
+const express = require('express');
 const cookieParser = require('cookie-parser');
 
 const app = express();
 app.use(cookieParser());
 const PORT = 8080; // default port 8080
 
-//const shortUrl = function generateRandomString() {
-    //return Math.random().toString(36).substring(2, 8);
-//}
-
-app.set("view engine", "ejs");
+app.set('view engine', 'ejs');
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: { longURL: 'https://www.tsn.ca', userID: 'aJ48lW' },
+  i3BoGr: { longURL: 'https://www.google.ca', userID: 'aJ48lW' }
 };
 
 const users = {};
 
 
-
 //Middleware to make the body data from a post request readable for humans
-const bodyParser = require("body-parser");
+const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
-//Helper Functions
+//Helper Functions below
 
-const addNewUrl = longURL => {
+const addNewUrl = (longURL, userID) => {
     
     const shortURL = Math.random().toString(36).substring(2, 8);
 
     //add it to the urlDatabase
 
-    urlDatabase[shortURL] = longURL;
+    urlDatabase[shortURL] = {longURL: longURL, userID: userID};
 
     return shortURL;
 };
-
-const updateUrl = function (shortURL, longURL) {
-    urlDatabase[shortURL] = longURL;
+//Updates the longURL in the shorURL object with the new LongURL entered by the user
+const updateUrl = (shortURL, longURL) => {
+    urlDatabase[shortURL].longURL = longURL;
 };
 
-const addUser = function (email, password) {
+//Adds a new user to the users database with their id, email and password
+const addUser = (email, password) => {
   const id = Math.random().toString(36).substring(2, 8);
   const newUser = {
     id: id,
@@ -53,7 +49,8 @@ const addUser = function (email, password) {
   return id;
 };
 
-const emailLookUp = function (email) {
+//Looks if an email already exists in the users database for a user
+const emailLookUp = (email) => {
   let ids = Object.keys(users);
 
   for (let id of ids) {
@@ -64,7 +61,8 @@ const emailLookUp = function (email) {
   return false;
 };
 
-const comparePassword = function (email, password) {
+//Used to validate if a password entered by the user matches the password for that user already stored in the users database
+const comparePassword = (email, password) => {
   let ids = Object.keys(users);
 
   for (let id of ids) {
@@ -74,6 +72,8 @@ const comparePassword = function (email, password) {
   }
   return false;
 };
+
+//Routes below
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -102,7 +102,7 @@ app.get("/urls.json", (req, res) => {
   });
 
   app.get("/urls/:shortURL", (req, res) => {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies.user_id]};
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.cookies.user_id]};
     res.render("urls_show", templateVars);
   });
 
@@ -116,9 +116,11 @@ app.get("/urls.json", (req, res) => {
     res.render("registration", templateVars);
   })
   app.post('/urls', (req, res) => {
-  
+    const userID = users[req.cookies.user_id]['id'];
+    console.log(userID);
     const longURL = req.body['longURL'];
-    const shortURL = addNewUrl(longURL);
+    const shortURL = addNewUrl(longURL, userID);
+    console.log(longURL);
   
     res.redirect(`urls/${shortURL}`);
   });
