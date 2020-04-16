@@ -73,21 +73,38 @@ const comparePassword = (email, password) => {
   return false;
 };
 
+//Function that returns all the urls that are owned by a specific user
+const urlsForUser = id => {
+  let userUrls = {};
+  for (urls in urlDatabase) {
+    if (urlDatabase[urls].userID === id) {
+      userUrls[urls] = urlDatabase[urls].longURL
+    }
+  }
+  return userUrls;
+};
+
 //Routes below
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/urls.json", (req, res) => {
+app.get('/urls.json', (req, res) => {
     res.json(urlDatabase);
   });
 
-  app.get("/urls", (req, res) => {
+app.get('/urls', (req, res) => {
+  let templateVars = {urls: urlsForUser(req.cookies.user_id), user: users[req.cookies.user_id]};
 
-    let templateVars = {urls: urlDatabase, user: users[req.cookies.user_id]};
+  if (!templateVars.user){
+    res.send('please log in or register');
+    res.redirect('/login');
+  
+  } else {
     res.render("urls_index", templateVars);
-  });
+  }
+});
 
   app.get("/urls/new", (req, res) => {
     let templateVars = {user: users[req.cookies.user_id]};
@@ -102,8 +119,17 @@ app.get("/urls.json", (req, res) => {
   });
 
   app.get("/urls/:shortURL", (req, res) => {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]['longURL'], user: users[req.cookies.user_id]};
-    res.render("urls_show", templateVars);
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[req.cookies.user_id]};
+    
+    if (!templateVars.user) {
+      res.send('Please log in or register');
+      res.redirect('/login')
+
+    } else if (req.cookies.user_id === urlDatabase[req.params.shortURL]['userID']) {
+      res.render("urls_show", templateVars);
+    } else {
+      res.send('You do not have access to this content');
+    }
   });
 
   app.get("/u/:shortURL", (req, res) => {
