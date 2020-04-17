@@ -1,5 +1,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(cookieParser());
@@ -66,7 +67,7 @@ const comparePassword = (email, password) => {
   let ids = Object.keys(users);
 
   for (let id of ids) {
-    if (users[id]['email'] === email && users[id]['password'] === password) {
+    if (users[id]['email'] === email && bcrypt.compareSync(password, users[id]['password']))  {
       return id;
     }
   }
@@ -99,7 +100,6 @@ app.get('/urls', (req, res) => {
 
   if (!templateVars.user){
     res.send('please log in or register');
-    res.redirect('/login');
   
   } else {
     res.render("urls_index", templateVars);
@@ -179,6 +179,7 @@ app.get('/urls', (req, res) => {
   app.post('/register',(req, res) => {
     const email = req.body.email;
     const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     
     if (!email || !password) {
       res.status(400);
@@ -189,8 +190,7 @@ app.get('/urls', (req, res) => {
       res.send('An Account with this email already exists!');
     
     } else {
-      const id = addUser(email, password);
-      
+      const id = addUser(email, hashedPassword);
       res.cookie('user_id', id);
       res.redirect('/urls');
       
@@ -200,7 +200,7 @@ app.get('/urls', (req, res) => {
   app.get('/login', (req, res) => {
     let templateVars = {user: users[req.cookies.user_id]};
     res.render('login', templateVars);
-  })
+  });
 
   app.post('/login', (req, res) => {
     const email = req.body.email;
