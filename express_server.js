@@ -1,6 +1,7 @@
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const getUserByEmail = require('./helper');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -47,18 +48,6 @@ const addUser = (email, password) => {
 
   users[id] = newUser;
   return id;
-};
-
-//Looks if an email already exists in the users database for a user
-const emailLookUp = (email) => {
-  let ids = Object.keys(users);
-
-  for (let id of ids) {
-    if (users[id]['email'] === email) {
-      return true;
-    }
-  }
-  return false;
 };
 
 //Used to validate if a password entered by the user matches the password for that user already stored in the users database
@@ -147,10 +136,8 @@ app.get('/urls', (req, res) => {
   })
   app.post('/urls', (req, res) => {
     const userID = users[req.session.user_id]['id'];
-    console.log(userID);
     const longURL = req.body['longURL'];
     const shortURL = addNewUrl(longURL, userID);
-    console.log(longURL);
   
     res.redirect(`urls/${shortURL}`);
   });
@@ -189,7 +176,7 @@ app.get('/urls', (req, res) => {
       res.status(400);
       res.send('Fields cannot be blank!');
     
-    } else if (emailLookUp(email)) {
+    } else if (getUserByEmail(email, users)) {
       res.status(400);
       res.send('An Account with this email already exists!');
     
@@ -214,7 +201,7 @@ app.get('/urls', (req, res) => {
       res.status(400);
       res.send('Fields cannot be blank!');
     
-    } else if (!emailLookUp(email)) {
+    } else if (!getUserByEmail(email, users)) {
       res.status(403);
       res.send('You are not registered');
     
